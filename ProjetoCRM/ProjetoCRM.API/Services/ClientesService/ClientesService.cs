@@ -53,11 +53,19 @@ namespace ProjetoCRM.API.Services.ClientesService
         }
 
         //método para buscar a lista de clientes
-        public async Task<ServiceResponse<List<GetClienteDto>>> GetListaClientes()
+        public async Task<ServiceResponse<List<GetClienteDto>>> ObterListaPaginada(int pagina, int itensPorPagina)
         {
+            var skip = (pagina - 1) * itensPorPagina; // Convenção de páginação começando em 1
+
             var serviceResponse = new ServiceResponse<List<GetClienteDto>>();
-            var dbClientes = await _context.Clientes.ToListAsync();
+
+            var dbClientes = await _context.Clientes
+                .Skip(skip)
+                .Take(itensPorPagina)
+                .ToListAsync();
+
             serviceResponse.Data = dbClientes.Select(c => _mapper.Map<GetClienteDto>(c)).ToList();
+
             return serviceResponse;
         }
 

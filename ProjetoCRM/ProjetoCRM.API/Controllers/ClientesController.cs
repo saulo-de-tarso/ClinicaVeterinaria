@@ -22,9 +22,15 @@ namespace ProjetoCRM.API.Controllers
 
         //GET para buscar a lista de clientes, utilizando o método implantado no serviço de clientes
         [HttpGet]
-        public async Task<ActionResult<ServiceResponse<List<GetClienteDto>>>> GetListaClientes()
+        public async Task<ActionResult<ServiceResponse<List<GetClienteDto>>>> ObterListaPaginada(int pagina, int itensPorPagina)
         {
-            return Ok(await _clientesService.GetListaClientes());
+            if (pagina < 1)
+                return BadRequest(new { pagina = "Página não pode ser menor do que 1" });
+
+            if (itensPorPagina <= 0 || itensPorPagina > 100)
+                return BadRequest(new { pagina = "Itens por pagina não pode ser menor do que zero nem maior do que 100" });
+
+            return Ok(await _clientesService.ObterListaPaginada(pagina, itensPorPagina));
         }
 
         //GET para buscar o cliente por id, utilizando o método implantado no serviço de clientes
