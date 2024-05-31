@@ -396,3 +396,11 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+ProjetoCRM/ProjetoCRM.API/appsettings.Development.json
+ProjetoCRM/ProjetoCRM.API/appsettings.json
+ProjetoCRM/ProjetoCRM.API/.config/dotnet-tools.json
+ProjetoCRM/ProjetoCRM.API/Properties/launchSettings.json
+ProjetoCRM/ProjetoCRM.API/Properties/ServiceDependencies/caseploomes-api - Web Deploy/profile.arm.json
+ProjetoCRM/ProjetoCRM.API/Properties/ServiceDependencies/local/mssql1.arm.json
+ProjetoCRM/ProjetoCRM.API/Properties/ServiceDependencies/caseploomes-api - Web Deploy/mssql1.arm.json
+ProjetoCRM/ProjetoCRM.API/Properties/ServiceDependencies/case-ploomesApi - Web Deploy/profile.arm.json
