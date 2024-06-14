@@ -1,13 +1,13 @@
 ﻿namespace ProjetoCRM.API.Models
 {
-    //Classe para retornar a resposta do serviço
+    //Class to return service response
     public class ServiceResponse<T>
     {
-        //Resposta dos dados
+        //Data answer
         public T? Data { get; set; }
-        //Informar se a requisição foi feita com sucesso
+        //Inform if the request was successful
         public bool Success { get; set; } = true;
-        //Mensagem para informar em caso de erro
+        //Message to inform the error, if not successful
         public string Message { get; set; } = string.Empty;
     }
 }

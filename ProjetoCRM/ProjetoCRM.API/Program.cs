@@ -1,5 +1,5 @@
 global using Microsoft.EntityFrameworkCore;
-using ProjetoCRM.API.Services.ClientesService;
+using ProjetoCRM.API.Services.ClientService;
 using ProjetoCRM.API.Data;
 using ProjetoCRM.API.Models;
 using System;
@@ -17,16 +17,16 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Super Hero API", Version = "v1" });
 });
 
-// Builde para registrar o automapper
+// Builder to register automapper
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-// Builder para registrar o cliente de serviços no programa
-builder.Services.AddScoped<IClientesService, ClientesService>();
+// Builder to register the clients service
+builder.Services.AddScoped<IClientService, ClientService>();
 
-//Builder para conexão do SQL com plataforma azure
+//Builder to connect to the SQL server instance
 
 builder.Services.AddDbContext<DataContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SQLServer")));
 
 
 var app = builder.Build();
@@ -41,7 +41,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwaggerUI();
 }
-//Caso o ambiente não seja de desenvolvimento, retira o prefixo da rota (/swagger), para poder acessar o swagger diretamente na página da API
+//If enviroment is not development, removes the route prefix (/swagger), for direct access to swagger from the API home page
 else
 {
     app.UseSwaggerUI(c =>
