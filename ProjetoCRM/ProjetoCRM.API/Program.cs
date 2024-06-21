@@ -26,7 +26,10 @@ builder.Services.AddScoped<IClientService, ClientService>();
 //Builder to connect to the SQL server instance
 
 builder.Services.AddDbContext<DataContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SQLServer")));
+    options
+        .UseSqlServer(builder.Configuration.GetConnectionString("SQLServer"))
+        .LogTo(Console.WriteLine, LogLevel.Information)
+    );
 
 
 var app = builder.Build();

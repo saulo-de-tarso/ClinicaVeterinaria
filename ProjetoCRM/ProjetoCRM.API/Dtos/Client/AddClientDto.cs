@@ -10,7 +10,7 @@ namespace ProjetoCRM.API.Dtos.Client
         [Required(ErrorMessage = "Por favor, insira um valor para o nome")]
         public string? Name { get; set; }
 
-        [MaxLength(11)]
+        [MaxLength(14)]
         [Required(ErrorMessage = "Por favor, insira um valor para o CPF")]
         [RegularExpression(@"^\d{3}\.\d{3}\.\d{3}-\d{2}$", ErrorMessage = "O CPF deve estar no formato xxx.xxx.xxx-xx")]
         public string? Cpf { get; set; }

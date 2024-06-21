@@ -7,110 +7,93 @@ namespace ProjetoCRM.API.Services.ClientService
 {
     public class ClientService : IClientService
     {
-   
-        //private attribute for automapper, to map service from dtos
         private readonly IMapper _mapper;
-
-        //private attribute for datacontext
         private readonly DataContext _context;
 
-        //client service constructor
         public ClientService(IMapper mapper, DataContext context)
         {
             _context = context;
             _mapper = mapper;
         }
 
-        //add client 
-        public async Task<ServiceResponse<List<GetClientDto>>> Add(AddClientDto newClient)
+        public async Task<GetClientDto> Add(AddClientDto newClient)
         {
-            var serviceResponse = new ServiceResponse<List<GetClientDto>>();
-            _context.Client.Add(_mapper.Map<Client>(newClient));
+            var clientModel = _mapper.Map<Client>(newClient);
+
+            await _context.Client.AddAsync(clientModel);
+
             await _context.SaveChangesAsync();
-            serviceResponse.Data = _context.Client.Select(c => _mapper.Map<GetClientDto>(c)).ToList();           
-            return serviceResponse;
+
+            var response = _mapper.Map<GetClientDto>(clientModel);
+
+            return response;
         }
 
-        //get client by id
-        public async Task<ServiceResponse<GetClientDto>> GetById(int id)
+        public async Task<GetClientDto> GetById(int id)
         {
-            var serviceResponse = new ServiceResponse<GetClientDto>();
+            var clients = await _context.Client
+                   .Select(clientModel => new GetClientDto()
+                   {
+                       Id = clientModel.Id,
+                       Name = clientModel.Name,
+                       Cpf = clientModel.Cpf,
+                       Email = clientModel.Email
+                   })
+                   .FirstOrDefaultAsync(c => c.Id == id);
 
-            //exceptions for id not found
-            try
-            {
-                var dbClient = await _context.Client.FirstOrDefaultAsync(c => c.Id == id);
-                if (dbClient is null)
-                    throw new Exception($"Cliente com Id {id} não foi encontrado");
-                serviceResponse.Data = _mapper.Map<GetClientDto>(dbClient);   
-            }
-            catch (Exception ex)
-            {
-                serviceResponse.Success = false;
-                serviceResponse.Message = ex.Message;
-            }
-            return serviceResponse;
+            if (clients is null)
+                throw new KeyNotFoundException($"Cliente com Id {id} não foi encontrado");
+
+            return clients;
         }
 
-        //get client list
-        public async Task<ServiceResponse<List<GetClientDto>>> Get()
+        public async Task<List<GetClientDto>> Get(int page, int itemsPerPage)
         {
+            int skip = (page - 1) * itemsPerPage;
+
             var serviceResponse = new ServiceResponse<List<GetClientDto>>();
-            var dbClient = await _context.Client.ToListAsync();
-            serviceResponse.Data = dbClient.Select(c => _mapper.Map<GetClientDto>(c)).ToList();
-            return serviceResponse;
-        }
 
-        //update client
-        public async Task<ServiceResponse<GetClientDto>> Update(UpdateClientDto updateClient)
-        {
-            var serviceResponse = new ServiceResponse<GetClientDto>();
-            //exceptions for id not found
-            try
-            {
-                
-                var client = await _context.Client.FirstOrDefaultAsync(c => c.Id == updateClient.Id);
-                if (client is null)
-                    throw new Exception($"Cliente com Id {updateClient.Id} não foi encontrado");
-
-                _mapper.Map(updateClient, client);
-                await _context.SaveChangesAsync();
-                
-                serviceResponse.Data = _mapper.Map<GetClientDto>(client);
-            }
-            catch(Exception ex)
-            {
-                serviceResponse.Success = false;
-                serviceResponse.Message = ex.Message;
-            }
+            var clients = await _context.Client
+               .Select(clientModel => new GetClientDto()
+               {
+                   Id = clientModel.Id,
+                   Name = clientModel.Name,
+                   Cpf = clientModel.Cpf,
+                   Email = clientModel.Email
+               })
+               .Skip(skip)
+               .Take(itemsPerPage)
+               .ToListAsync();
             
-            return serviceResponse;
+            return clients;
         }
 
-        //delete client
-        public async Task<ServiceResponse<List<GetClientDto>>> Delete(int id)
+        public async Task<GetClientDto> Update(UpdateClientDto updateClient)
         {
-            var serviceResponse = new ServiceResponse<List<GetClientDto>>();
-            //exceptions for id not found
-            try
-            {
+            var client = await _context.Client.FirstOrDefaultAsync(c => c.Id == updateClient.Id);
 
-                var client = await _context.Client.FirstOrDefaultAsync(c => c.Id == id);
-                if (client is null)
-                    throw new Exception($"Cliente com Id {id} não foi encontrado");
+            if (client is null)
+                throw new KeyNotFoundException($"Cliente com Id {updateClient.Id} não foi encontrado");
 
-                _context.Client.Remove(client);
+            _mapper.Map(updateClient, client);
 
-                await _context.SaveChangesAsync();
-                serviceResponse.Data = await _context.Client.Select(c => _mapper.Map<GetClientDto>(c)).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                serviceResponse.Success = false;
-                serviceResponse.Message = ex.Message;
-            }
+            await _context.SaveChangesAsync();
 
-            return serviceResponse;
+            var response = _mapper.Map<GetClientDto>(client);
+
+            return response;
+        }
+
+        public async Task Delete(int id)
+        {
+            var clientExists = await _context.Client.AnyAsync(c => c.Id == id);
+
+            if (clientExists)
+                throw new KeyNotFoundException($"Cliente com Id {id} não foi encontrado");
+
+            var _ = _context.Client.Where(c => c.Id == id).ExecuteDeleteAsync();
+
+            await _context.SaveChangesAsync();
         }
     }
 }

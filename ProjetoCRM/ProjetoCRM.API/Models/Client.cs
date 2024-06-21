@@ -8,7 +8,7 @@ namespace ProjetoCRM.API.Models
         //Client Entity of the clinic      
         public int Id { get; set; }
         public string Name { get; set; }
-        [MaxLength(11)]
+        [MaxLength(14)]
         public string Cpf { get; set; }
         [MaxLength(100)]
         public string Address { get; set; }
