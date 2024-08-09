@@ -31,7 +31,7 @@ namespace ProjetoCRM.API.Services.ClientService
 
         public async Task<GetClientDto> GetById(int id)
         {
-            var clients = await _context.Client
+            var client = await _context.Client
                    .Select(clientModel => new GetClientDto()
                    {
                        Id = clientModel.Id,
@@ -41,10 +41,10 @@ namespace ProjetoCRM.API.Services.ClientService
                    })
                    .FirstOrDefaultAsync(c => c.Id == id);
 
-            if (clients is null)
+            if (client is null)
                 throw new KeyNotFoundException($"Cliente com Id {id} não foi encontrado");
 
-            return clients;
+            return client;
         }
 
         public async Task<List<GetClientDto>> Get(int page, int itemsPerPage)

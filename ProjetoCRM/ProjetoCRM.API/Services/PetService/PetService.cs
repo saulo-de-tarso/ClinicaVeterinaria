@@ -1,86 +1,105 @@
-﻿//using AutoMapper;
-//using ProjetoCRM.API.Data;
-//using ProjetoCRM.API.Dtos.Pet;
-//using ProjetoCRM.API.Models;
+﻿
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using ProjetoCRM.API.Data;
+using ProjetoCRM.API.Dtos.Client;
+using ProjetoCRM.API.Dtos.Pet;
+using ProjetoCRM.API.Models;
 
-//namespace ProjetoCRM.API.Services.PetService
-//{
-//    public class PetService : IPetService
-//    {
+namespace ProjetoCRM.API.Services.PetService
+{
+    public class PetService : IPetService
+    {
+        private readonly DataContext _context;
+        private readonly IMapper _mapper;
+        public PetService(IMapper mapper, DataContext context)
+        {
+            _context = context;
+            _mapper = mapper;
+        }
+        public async Task<GetPetDto> Add(AddPetDto newPet)
+        {
+            var clientModel = _mapper.Map<Pet>(newPet);
 
-//        //private attribute for automapper, to map services from dtos
-//        private readonly IMapper _mapper;
+            await _context.Pet.AddAsync(clientModel);
 
-//        //private attribute for datacontext
-//        private readonly DataContext _context;
+            await _context.SaveChangesAsync();
 
-//        //pet service constructor
-//        public PetService(IMapper mapper, DataContext context)
-//        {
-//            _context = context;
-//            _mapper = mapper;
-//        }
+            var response = _mapper.Map<GetPetDto>(clientModel);
 
-//        //add pet 
-//        public async Task<ServiceResponse<List<GetPetDto>>> Add(AddPetDto newPet)
-//        {
-//            var serviceResponse = new ServiceResponse<List<GetPetDto>>();
-//            _context.Pet.Add(_mapper.Map<Pet>(newPet));
-//            await _context.SaveChangesAsync();
-//            serviceResponse.Data = _context.Pet.Select(c => _mapper.Map<GetPetDto>(c)).ToList();
-//            return serviceResponse;
-//        }
+            return response;
+        }
+        public async Task<GetPetDto> GetById(int id)
+        {
+            var pet = await _context.Pet.AsNoTracking().Include(i => i.Owner).Where(w => w.Id == id).Select(s => new GetPetDto()
+            {
+                Id = s.Id,
+                Name = s.Name,
+                BirthDate = s.BirthDate,
+                Specie = s.Specie,
+                Race = s.Race,
+                Owner = new PetOwnerDto()
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                },
+            }).FirstOrDefaultAsync();
+            if (pet is null)
+                throw new KeyNotFoundException($"Pet com Id {id} não foi encontrado");
+            return pet;
+        }
+        public async Task<List<GetPetDto>> Get(int page, int itemsPerPage)
+        {
+            int skip = (page - 1) * itemsPerPage;
 
-//        //update pet
-//        public async Task<ServiceResponse<GetPetDto>> Update(UpdatePetDto updatePet)
-//        {
-//            var serviceResponse = new ServiceResponse<GetPetDto>();
-//            //exceptions for id not found
-//            try
-//            {
+            var serviceResponse = new ServiceResponse<List<GetPetDto>>();
 
-//                var pet = await _context.Pet.FirstOrDefaultAsync(c => c.Id == updatePet.Id);
-//                if (pet is null)
-//                    throw new Exception($"Pet com Id {updatePet.Id} não foi encontrado");
+            var pets = await _context.Pet.AsNoTracking().Include(i => i.Owner).Select(s => new GetPetDto()
+               
+               {
+                    Id = s.Id,
+                    Name = s.Name,
+                    BirthDate = s.BirthDate,
+                    Specie = s.Specie,
+                    Race = s.Race,
+                    Owner = new PetOwnerDto()
+                    {
+                        Id = s.Id,
+                        Name = s.Name,
+                    },
+                })
+               .Skip(skip)
+               .Take(itemsPerPage)
+               .ToListAsync();
 
-//                _mapper.Map(updatePet, pet);
-//                await _context.SaveChangesAsync();
+            return pets;
+        }
 
-//                serviceResponse.Data = _mapper.Map<GetPetDto>(pet);
-//            }
-//            catch (Exception ex)
-//            {
-//                serviceResponse.Success = false;
-//                serviceResponse.Message = ex.Message;
-//            }
+        public async Task<GetPetDto> Update(UpdatePetDto updatePet)
+        {
+            var pet = await _context.Pet.FirstOrDefaultAsync(c => c.Id == updatePet.Id);
 
-//            return serviceResponse;
-//        }
+            if (pet is null)
+                throw new KeyNotFoundException($"Pet com Id {updatePet.Id} não foi encontrado");
 
-//        //delete pet
-//        public async Task<ServiceResponse<List<GetPetDto>>> Delete(int id)
-//        {
-//            var serviceResponse = new ServiceResponse<List<GetPetDto>>();
-//            //exceptions for id not found
-//            try
-//            {
+            _mapper.Map(updatePet, pet);
 
-//                var pet = await _context.Pet.FirstOrDefaultAsync(c => c.Id == id);
-//                if (pet is null)
-//                    throw new Exception($"Pet com Id {id} não foi encontrado");
+            await _context.SaveChangesAsync();
 
-//                _context.Pet.Remove(pet);
+            var response = _mapper.Map<GetPetDto>(pet);
 
-//                await _context.SaveChangesAsync();
-//                serviceResponse.Data = await _context.Pet.Select(c => _mapper.Map<GetPetDto>(c)).ToListAsync();
-//            }
-//            catch (Exception ex)
-//            {
-//                serviceResponse.Success = false;
-//                serviceResponse.Message = ex.Message;
-//            }
+            return response;
+        }
+        public async Task Delete(int id)
+        {
+            var petExists = await _context.Pet.AnyAsync(c => c.Id == id);
 
-//            return serviceResponse;
-//        }
-//    }
-//}
+            if (petExists)
+                throw new KeyNotFoundException($"Pet com Id {id} não foi encontrado");
+
+            var _ = _context.Pet.Where(c => c.Id == id).ExecuteDeleteAsync();
+
+            await _context.SaveChangesAsync();
+        }
+    }
+}

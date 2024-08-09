@@ -1,20 +1,13 @@
-﻿//using ProjetoCRM.API.Dtos.Pet;
-//using ProjetoCRM.API.Models;
-//namespace ProjetoCRM.API.Services.PetService
-//{
-//    //pet service interface
-//    public interface IPetService
-//    {
+﻿using ProjetoCRM.API.Dtos.Client;
+using ProjetoCRM.API.Dtos.Pet;
 
-//        //Add pet
-//        Task<ServiceResponse<List<GetPetDto>>> Add(AddPetDto newPet);
+namespace ProjetoCRM.API.Services.PetService;
 
-//        //Update pet
-//        Task<ServiceResponse<GetPetDto>> Update(UpdatePetDto updatePet);
-
-//        //Delete pet
-//        Task<ServiceResponse<List<GetPetDto>>> Delete(int id);
-
-
-//    }
-//}
+public interface IPetService
+{
+    Task<List<GetPetDto>> Get(int page, int itemsPerPage);
+    Task<GetPetDto> GetById(int id);
+    Task<GetPetDto> Add(AddPetDto newPet);
+    Task<GetPetDto> Update(UpdatePetDto updatePet);
+    Task Delete(int id);
+}

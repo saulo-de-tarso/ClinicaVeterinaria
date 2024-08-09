@@ -16,8 +16,9 @@ namespace ProjetoCRM.API
             CreateMap<Client, GetClientDto>(); //Maps the getclientdto by entity client
             CreateMap<AddClientDto, Client>(); //Maps the client entity addclientdto
             CreateMap<UpdateClientDto, Client>(); //Maps the client entity by updateclientdto
-            
+
             //Maps for pet entity
+            CreateMap<Pet, GetPetDto>();
             CreateMap<AddPetDto, Pet>(); //Maps the petentity addpetdto
             CreateMap<UpdatePetDto, Pet>(); //Maps the petentity by updatepetdto
 

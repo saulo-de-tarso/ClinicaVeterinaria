@@ -3,6 +3,7 @@ using ProjetoCRM.API.Services.ClientService;
 using ProjetoCRM.API.Data;
 using ProjetoCRM.API.Models;
 using System;
+using ProjetoCRM.API.Services.PetService;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,7 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 // Builder to register the clients service
 builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IPetService, PetService>();
 
 //Builder to connect to the SQL server instance
 
@@ -39,20 +41,21 @@ var app = builder.Build();
 
 
 app.UseSwagger();
+app.UseSwaggerUI();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwaggerUI();
-}
-//If enviroment is not development, removes the route prefix (/swagger), for direct access to swagger from the API home page
-else
-{
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Super Hero API V1");
-        c.RoutePrefix = string.Empty;
-    });
-}
+//if (app.environment.isdevelopment())
+//{
+    
+//}
+////if enviroment is not development, removes the route prefix (/swagger), for direct access to swagger from the api home page
+//else
+//{
+//    app.useswaggerui(c =>
+//    {
+//        c.swaggerendpoint("/swagger/v1/swagger.json", "super hero api v1");
+//        c.routeprefix = string.empty;
+//    });
+//}
 
 
 app.UseHttpsRedirection();
