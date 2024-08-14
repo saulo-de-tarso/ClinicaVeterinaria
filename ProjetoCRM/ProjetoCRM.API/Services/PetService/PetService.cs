@@ -17,18 +17,20 @@ namespace ProjetoCRM.API.Services.PetService
             _context = context;
             _mapper = mapper;
         }
+
         public async Task<GetPetDto> Add(AddPetDto newPet)
         {
-            var clientModel = _mapper.Map<Pet>(newPet);
+            var petModel = _mapper.Map<Pet>(newPet);
 
-            await _context.Pet.AddAsync(clientModel);
+            await _context.Pet.AddAsync(petModel);
 
             await _context.SaveChangesAsync();
 
-            var response = _mapper.Map<GetPetDto>(clientModel);
+            var response = _mapper.Map<GetPetDto>(petModel);
 
             return response;
         }
+
         public async Task<GetPetDto> GetById(int id)
         {
             var pet = await _context.Pet.AsNoTracking().Include(i => i.Owner).Where(w => w.Id == id).Select(s => new GetPetDto()

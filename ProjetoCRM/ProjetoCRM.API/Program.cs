@@ -4,6 +4,7 @@ using ProjetoCRM.API.Data;
 using ProjetoCRM.API.Models;
 using System;
 using ProjetoCRM.API.Services.PetService;
+using ProjetoCRM.API.Services.AppointmentService;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +25,7 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 // Builder to register the clients service
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IPetService, PetService>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 
 //Builder to connect to the SQL server instance
 

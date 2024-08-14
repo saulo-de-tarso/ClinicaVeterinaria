@@ -13,8 +13,7 @@ namespace ProjetoCRM.API.Dtos.Pet
         [Required(ErrorMessage = "Por favor, insira um valor para o nome")]
         public string? Name { get; set; }
 
-        [Required(ErrorMessage = "Por favor, insira um valor para o CPF")]
-        [RegularExpression(@"^\d{3}\.\d{3}\.\d{3}-\d{2}$", ErrorMessage = "O CPF deve estar no formato xxx.xxx.xxx-xx")]
+        [Required(ErrorMessage = "Por favor, insira um valor para a data de nascimento")]
         public DateTime BirthDate { get; set; }
 
         [MaxLength(100, ErrorMessage = "A espécie pode ter no máximo 100 caracteres")]
