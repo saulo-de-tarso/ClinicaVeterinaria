@@ -21,9 +21,9 @@ namespace ProjetoCRM.API.Controllers
 
         //GET appointment list
         [HttpGet]
-        public async Task<ActionResult<ServiceResponse<List<GetAppointmentDto>>>> Get()
+        public async Task<ActionResult<ServiceResponse<List<GetAppointmentDto>>>> Get(int page = 1, int itemsPerPage = 10)
         {
-            return Ok(await _appointmentService.Get());
+            return Ok(await _appointmentService.Get(page, itemsPerPage));
         }
 
         //GET appointment by id
@@ -55,12 +55,11 @@ namespace ProjetoCRM.API.Controllers
 
         //DELETE to delete an appointment by id
         [HttpDelete]
-        public async Task<ActionResult<ServiceResponse<GetAppointmentDto>>> Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            var response = await _appointmentService.Delete(id);
-            if (response.Data is null)
-                return NotFound(response);
-            return Ok(response);
+            await _appointmentService.Delete(id);
+         
+            return Ok();
         }
     }
 }

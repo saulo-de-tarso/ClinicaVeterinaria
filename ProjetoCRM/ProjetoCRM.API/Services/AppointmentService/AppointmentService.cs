@@ -22,12 +22,29 @@ namespace ProjetoCRM.API.Services.AppointmentService
         }
 
         //add appointment 
-        public async Task<ServiceResponse<List<GetAppointmentDto>>> Add(AddAppointmentDto newAppointment)
+        public async Task<ServiceResponse<GetAppointmentDto>> Add(AddAppointmentDto newAppointment)
         {
-            var serviceResponse = new ServiceResponse<List<GetAppointmentDto>>();
-            _context.Appointment.Add(_mapper.Map<Appointment>(newAppointment));
+            //criar uma instancia do modelo de service response
+            var serviceResponse = new ServiceResponse<GetAppointmentDto>();
+            var appointment = new Appointment()
+            {
+                Value = newAppointment.Value,
+                Description = newAppointment.Description,
+                PetId = newAppointment.PetId
+            };
+            //adicionar a consulta ao banco de dados
+
+            await _context.Appointment.AddAsync(appointment);
             await _context.SaveChangesAsync();
-            serviceResponse.Data = _context.Appointment.Select(c => _mapper.Map<GetAppointmentDto>(c)).ToList();
+            var appointmentFromDb = await _context.Appointment.FirstOrDefaultAsync(c => c.Id == appointment.Id);
+            serviceResponse.Data = new GetAppointmentDto()
+            {
+                Id = appointmentFromDb.Id,
+                Value = appointmentFromDb.Value,
+                Description = appointmentFromDb.Description,
+                PetId = appointmentFromDb.PetId
+            };
+            //retornar o valor do service response
             return serviceResponse;
         }
 
@@ -39,25 +56,45 @@ namespace ProjetoCRM.API.Services.AppointmentService
             //exceptions for id not found
             try
             {
-                var dbAppointment = await _context.Appointment.FirstOrDefaultAsync(c => c.Id == id);
+                var dbAppointment = await _context.Appointment
+                    .Select(s => new GetAppointmentDto()
+                    {
+                        Id = s.Id,
+                        Value = s.Value,
+                        Description = s.Description,
+                        PetId = s.PetId
+                    })
+                    .FirstOrDefaultAsync(c => c.Id == id);
+
                 if (dbAppointment is null)
                     throw new Exception($"Consulta com Id {id} não foi encontrado");
-                serviceResponse.Data = _mapper.Map<GetAppointmentDto>(dbAppointment);
+
+                serviceResponse.Data = dbAppointment;
             }
             catch (Exception ex)
             {
                 serviceResponse.Success = false;
                 serviceResponse.Message = ex.Message;
             }
+
             return serviceResponse;
         }
 
         //get appointment list
-        public async Task<ServiceResponse<List<GetAppointmentDto>>> Get()
+        public async Task<ServiceResponse<List<GetAppointmentDto>>> Get(int page, int itemsPerPage)
         {
             var serviceResponse = new ServiceResponse<List<GetAppointmentDto>>();
-            var dbAppointment = await _context.Appointment.ToListAsync();
-            serviceResponse.Data = dbAppointment.Select(c => _mapper.Map<GetAppointmentDto>(c)).ToList();
+
+            var skip = (page - 1) * itemsPerPage;
+
+            var dbAppointment = await _context.Appointment
+                .Select(c => _mapper.Map<GetAppointmentDto>(c))
+                .Skip(skip)
+                .Take(itemsPerPage)
+                .ToListAsync();
+
+            serviceResponse.Data = dbAppointment;
+
             return serviceResponse;
         }
 
@@ -88,29 +125,16 @@ namespace ProjetoCRM.API.Services.AppointmentService
         }
 
         //delete appointment
-        public async Task<ServiceResponse<List<GetAppointmentDto>>> Delete(int id)
+        public async Task Delete(int id)
         {
-            var serviceResponse = new ServiceResponse<List<GetAppointmentDto>>();
-            //exceptions for id not found
-            try
-            {
+            var appointment = await _context.Appointment.FirstOrDefaultAsync(c => c.Id == id);
+            if (appointment is null)
+                throw new Exception($"Consulta com Id {id} não foi encontrado");
 
-                var appointment = await _context.Appointment.FirstOrDefaultAsync(c => c.Id == id);
-                if (appointment is null)
-                    throw new Exception($"Consulta com Id {id} não foi encontrado");
+            _context.Appointment.Remove(appointment);
 
-                _context.Appointment.Remove(appointment);
+            await _context.SaveChangesAsync();
 
-                await _context.SaveChangesAsync();
-                serviceResponse.Data = await _context.Appointment.Select(c => _mapper.Map<GetAppointmentDto>(c)).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                serviceResponse.Success = false;
-                serviceResponse.Message = ex.Message;
-            }
-
-            return serviceResponse;
         }
     }
 }
